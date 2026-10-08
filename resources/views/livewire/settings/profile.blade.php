@@ -1,22 +1,29 @@
 <?php
 
+
 use App\Models\User;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Volt\Component;
+use Livewire\Attributes\Layout;
 
-new class extends Component {
-    public string $name = '';
+new #[Layout('components.layouts.app')] class extends Component {
+    public string $first_name = '';
+    public string $last_name = '';
     public string $email = '';
+    public string $phone = '';
 
     /**
      * Mount the component.
      */
     public function mount(): void
     {
-        $this->name = Auth::user()->name;
+        $this->first_name = Auth::user()->first_name;
+        $this->last_name = Auth::user()->last_name;
         $this->email = Auth::user()->email;
+        $this->phone = Auth::user()->phone;
     }
 
     /**
@@ -27,8 +34,15 @@ new class extends Component {
         $user = Auth::user();
 
         $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
 
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^\+?[0-9\s\-()]{7,20}$/',
+                Rule::unique(User::class)->ignore($user->id)
+            ],
             'email' => [
                 'required',
                 'string',
@@ -47,7 +61,7 @@ new class extends Component {
 
         $user->save();
 
-        $this->dispatch('profile-updated', name: $user->name);
+        $this->dispatch('profile-updated');
     }
 
     /**
@@ -74,12 +88,18 @@ new class extends Component {
 
     <x-settings.layout heading="Profile" subheading="Update your name and email address">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" label="{{ __('Name') }}" type="text" name="name" required autofocus autocomplete="name" />
+            <flux:input wire:model="first_name" label="{{ __('First Name') }}" type="text" name="first_name" required autofocus
+                        autocomplete="first_name"/>
+
+            <flux:input wire:model="last_name" label="{{ __('Last Name') }}" type="text" last_name="last_name" required autofocus
+                        autocomplete="last_name"/>
+
 
             <div>
-                <flux:input wire:model="email" label="{{ __('Email') }}" type="email" name="email" required autocomplete="email" />
+                <flux:input wire:model="email" label="{{ __('Email') }}" type="email" name="email" required
+                            autocomplete="email"/>
 
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
+                @if (auth()->user() instanceof MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
                     <div>
                         <p class="mt-2 text-sm text-gray-800">
                             {{ __('Your email address is unverified.') }}
@@ -101,17 +121,21 @@ new class extends Component {
                 @endif
             </div>
 
+            <flux:input wire:model="phone" label="{{ __('Phone') }}" type="phone" name="phone" required
+                        autocomplete="phone"/>
+
+
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
                     <flux:button variant="primary" type="submit" class="w-full">{{ __('Save') }}</flux:button>
                 </div>
 
                 <x-action-message class="me-3" on="profile-updated">
-                    {{ __('Saved.') }}
+                    {{ __('Saved') }}
                 </x-action-message>
             </div>
         </form>
 
-        <livewire:settings.delete-user-form />
+        <livewire:settings.delete-user-form/>
     </x-settings.layout>
 </section>

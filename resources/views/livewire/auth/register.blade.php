@@ -9,8 +9,10 @@ use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('components.layouts.auth')] class extends Component {
-    public string $name = '';
+    public string $first_name = '';
+    public string $last_name = '';
     public string $email = '';
+    public string $phone = '';
     public string $password = '';
     public string $password_confirmation = '';
 
@@ -20,8 +22,15 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public function register(): void
     {
         $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^\+?[0-9\s\-()]{7,20}$/',
+                'unique:' . User::class
+            ],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -42,14 +51,24 @@ new #[Layout('components.layouts.auth')] class extends Component {
     <x-auth-session-status class="text-center" :status="session('status')" />
 
     <form wire:submit="register" class="flex flex-col gap-6">
-        <!-- Name -->
+        <!-- First Name -->
         <div class="grid gap-2">
-            <flux:input wire:model="name" id="name" label="{{ __('Name') }}" type="text" name="name" required autofocus autocomplete="name" placeholder="Full name" />
+            <flux:input wire:model="first_name" id="first_name" label="{{ __('First Name') }}" type="text" name="first_name" required autofocus autocomplete="first_name" placeholder="First Name" />
+        </div>
+
+        <!-- Last Name -->
+        <div class="grid gap-2">
+            <flux:input wire:model="last_name" id="last_name" label="{{ __('Last Name') }}" type="text" name="last_name" required autofocus autocomplete="last_name" placeholder="Last Name" />
         </div>
 
         <!-- Email Address -->
         <div class="grid gap-2">
             <flux:input wire:model="email" id="email" label="{{ __('Email address') }}" type="email" name="email" required autocomplete="email" placeholder="email@example.com" />
+        </div>
+
+        <!-- Phone -->
+        <div class="grid gap-2">
+            <flux:input wire:model="phone" id="phone" label="{{ __('Phone') }}" type="tel" name="phone" required autocomplete="phone" placeholder="+43688123456" />
         </div>
 
         <!-- Password -->

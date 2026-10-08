@@ -1,8 +1,11 @@
 <?php
 
 use Livewire\Volt\Component;
+use Livewire\Attributes\Layout;
 
-new class extends Component {
+
+
+new #[Layout('components.layouts.app')] class extends Component {
     //
 }; ?>
 
